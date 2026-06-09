@@ -6,6 +6,26 @@
   const DEDUP_KEY_LENGTH = 280;
   const MAX_FILENAME_LENGTH = 120;
   const SUMMARY_PREVIEW_LENGTH = 240;
+  const LANGUAGE_EXTENSION_MAP = {
+    javascript: "js",
+    js: "js",
+    typescript: "ts",
+    ts: "ts",
+    python: "py",
+    py: "py",
+    shell: "sh",
+    bash: "sh",
+    sh: "sh",
+    json: "json",
+    html: "html",
+    css: "css",
+    markdown: "md",
+    md: "md",
+    yaml: "yml",
+    yml: "yml",
+    csharp: "cs",
+    cs: "cs",
+  };
 
   const PLATFORM_BY_HOST = [
     ["chatgpt.com", "chatgpt"],
@@ -91,7 +111,15 @@
 
   function inferFileName(text) {
     const match = text.match(/(?:file|filename|path)\s*[:=-]\s*([^\n\r]+)/i);
-    return match ? cleanText(match[1]).replace(/[^\w.\-/]/g, "_").slice(0, MAX_FILENAME_LENGTH) : "";
+    return match ? cleanText(match[1]).replace(/[^\w.\-]/g, "_").slice(0, MAX_FILENAME_LENGTH) : "";
+  }
+
+  function extensionForLanguage(language) {
+    const normalized = (language || "text").toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (!normalized) {
+      return "txt";
+    }
+    return LANGUAGE_EXTENSION_MAP[normalized] || normalized || "txt";
   }
 
   function collectEmbeddedFiles(messages) {
@@ -109,7 +137,7 @@
           continue;
         }
         const inferred = inferFileName(message.content);
-        const ext = language === "text" ? "txt" : language.replace(/[^\w]/g, "") || "txt";
+        const ext = extensionForLanguage(language);
         const filename = inferred || `generated-${fallbackIndex}.${ext}`;
         fallbackIndex += 1;
         const key = `${filename}:${content.slice(0, DEDUP_KEY_LENGTH)}`;
@@ -241,11 +269,15 @@
   }
 
   async function copyPayload(serialized) {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(serialized);
-      return true;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(serialized);
+        return true;
+      }
+      return false;
+    } catch (_) {
+      return false;
     }
-    return false;
   }
 
   const metadata = {

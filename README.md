@@ -17,7 +17,7 @@ A browser-based LLM conversation handoff tool that:
 2. Set the bookmark URL to:
 
 ```text
-javascript:(async()=>{const s=document.createElement('script');s.src='https://raw.githubusercontent.com/Divanshu-Bnsl/LLM-Handoff-Browser-Bookmarklet-for-AI-Conversation-Portability/main/bookmarklet.js?t='+Date.now();document.body.appendChild(s);})();
+javascript:(async()=>{const s=document.createElement('script');s.src='https://raw.githubusercontent.com/Divanshu-Bnsl/LLM-Handoff-Browser-Bookmarklet-for-AI-Conversation-Portability/94f16b21051c8a4b5476d60e3d3d1d399b9efd97/bookmarklet.js?t='+Date.now();document.body.appendChild(s);})();
 ```
 
 > For local development, you can paste and run the script from `bookmarklet.js` directly in the browser console.
