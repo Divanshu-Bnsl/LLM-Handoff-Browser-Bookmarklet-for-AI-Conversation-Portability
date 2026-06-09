@@ -185,12 +185,10 @@
     }
 
     try {
-      const apiKey = window.prompt("Optional API key for this request only:", "") || "";
       const response = await fetch(config.endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(apiKey.trim() ? { "X-API-Key": apiKey.trim() } : {}),
         },
         body: JSON.stringify({
           messages,
@@ -199,7 +197,7 @@
       });
 
       if (!response.ok) {
-        throw new Error(`Summary API request failed with status ${response.status}`);
+        throw new Error(`Summary API request failed with status ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -209,7 +207,8 @@
       }
       return summary;
     } catch (error) {
-      return `${fallbackSummary(messages)} (API summary failed, fallback applied: ${String(error.message || error)})`;
+      console.error("Summary API failed, using fallback summary.", error);
+      return fallbackSummary(messages);
     }
   }
 
