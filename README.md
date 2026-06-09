@@ -9,7 +9,7 @@ A browser-based LLM conversation handoff tool that:
 
 ## Files
 
-- `/tmp/workspace/Divanshu-Bnsl/LLM-Handoff-Browser-Bookmarklet-for-AI-Conversation-Portability/bookmarklet.js` - source script for the handoff bookmarklet.
+- `bookmarklet.js` - source script for the handoff bookmarklet.
 
 ## Install as a bookmarklet
 

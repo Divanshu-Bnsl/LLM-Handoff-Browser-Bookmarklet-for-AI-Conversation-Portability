@@ -3,6 +3,9 @@
 
   const STORAGE_KEY = "llm-handoff-summary-api";
   const FILE_NAME = `llm-handoff-${Date.now()}.json`;
+  const DEDUP_KEY_LENGTH = 280;
+  const MAX_FILENAME_LENGTH = 120;
+  const SUMMARY_PREVIEW_LENGTH = 240;
 
   const PLATFORM_BY_HOST = [
     ["chatgpt.com", "chatgpt"],
@@ -72,7 +75,7 @@
       if (!text) {
         continue;
       }
-      const key = text.slice(0, 280);
+      const key = text.slice(0, DEDUP_KEY_LENGTH);
       if (seen.has(key)) {
         continue;
       }
@@ -88,7 +91,7 @@
 
   function inferFileName(text) {
     const match = text.match(/(?:file|filename|path)\s*[:=-]\s*([^\n\r]+)/i);
-    return match ? cleanText(match[1]).replace(/[^\w.\-/]/g, "_").slice(0, 120) : "";
+    return match ? cleanText(match[1]).replace(/[^\w.\-/]/g, "_").slice(0, MAX_FILENAME_LENGTH) : "";
   }
 
   function collectEmbeddedFiles(messages) {
@@ -109,7 +112,7 @@
         const ext = language === "text" ? "txt" : language.replace(/[^\w]/g, "") || "txt";
         const filename = inferred || `generated-${fallbackIndex}.${ext}`;
         fallbackIndex += 1;
-        const key = `${filename}:${content.slice(0, 280)}`;
+        const key = `${filename}:${content.slice(0, DEDUP_KEY_LENGTH)}`;
         if (seen.has(key)) {
           continue;
         }
@@ -135,7 +138,7 @@
     const last = messages[messages.length - 1];
     return [
       `Conversation includes ${messages.length} messages (${userCount} user, ${assistantCount} assistant).`,
-      `Latest message preview: ${last.content.slice(0, 240)}${last.content.length > 240 ? "..." : ""}`,
+      `Latest message preview: ${last.content.slice(0, SUMMARY_PREVIEW_LENGTH)}${last.content.length > SUMMARY_PREVIEW_LENGTH ? "..." : ""}`,
     ].join(" ");
   }
 
@@ -177,17 +180,17 @@
       if (!endpoint.trim()) {
         return fallbackSummary(messages);
       }
-      const apiKey = window.prompt("Optional API key (stored in localStorage):", "") || "";
-      config = { endpoint: endpoint.trim(), apiKey: apiKey.trim() };
+      config = { endpoint: endpoint.trim() };
       saveApiConfig(config);
     }
 
     try {
+      const apiKey = window.prompt("Optional API key for this request only:", "") || "";
       const response = await fetch(config.endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(config.apiKey ? { "X-API-Key": config.apiKey } : {}),
+          ...(apiKey.trim() ? { "X-API-Key": apiKey.trim() } : {}),
         },
         body: JSON.stringify({
           messages,
